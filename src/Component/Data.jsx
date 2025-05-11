@@ -96,10 +96,20 @@ function Data({ darkMode }) {
     }
   }
   return files.length == 0 ? (
-    <div className={`no_files flex flex-col flex-wrap items-center justify-center w-full ${darkMode ? "text-[#3f3f46]" : "text-[#3f3f46]"}`}>
-        <img src="no-files.svg" alt="" className="w-[50%] md:w-[30%] lg:w-[23%]"/>
-        <p className="text-md sm:text-2xl py-2">Welcome to Drive, the home for all your files</p>
-        <p className="text-sm sm:text-xl">Use the “New” button to upload</p>
+    <div
+      className={`no_files flex flex-col flex-wrap items-center justify-center w-full${
+        darkMode ? "text-[#3f3f46]" : "text-[#3f3f46]"
+      }`}
+    >
+      <img
+        src="no-files.svg"
+        alt=""
+        className="w-[50%] md:w-[30%] lg:w-[23%]"
+      />
+      <p className="text-md sm:text-2xl py-2">
+        Welcome to Drive, the home for all your files
+      </p>
+      <p className="text-sm sm:text-xl">Use the “New” button to upload</p>
     </div>
   ) : (
     <>
@@ -154,58 +164,60 @@ function Data({ darkMode }) {
             </div>
 
             {files.map((obj) => (
-              <div
-                className={`file__card flex flex-col sm:flex-row text-center sm:text-left items-center sm:px-4 py-4 transition-all duration-300 cursor-pointer font-medium ${
-                  darkMode
-                    ? "bg-[#1e293b] hover:bg-blue-950 text-slate-400"
-                    : "bg-[#f0f4f9] hover:bg-blue-100 text-zinc-700"
-                } my-5 rounded-xl`}
-                key={obj.id}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  setContextMenu({
-                    visible: true,
-                    x: e.pageX,
-                    y: e.pageY,
-                    file: obj,
-                  });
-                }}
-                onTouchStart={(e) => {
-                  const timeout = setTimeout(() => {
+              <a href={obj.url} target="_blank">
+                <div
+                  className={`file__card flex flex-col sm:flex-row text-center sm:text-left items-center sm:px-4 py-4 transition-all duration-300 cursor-pointer font-medium ${
+                    darkMode
+                      ? "bg-[#1e293b] hover:bg-blue-950 text-slate-400"
+                      : "bg-[#f0f4f9] hover:bg-blue-100 text-zinc-700"
+                  } my-5 rounded-xl`}
+                  key={obj.id}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
                     setContextMenu({
                       visible: true,
-                      x: e.touches[0].pageX,
-                      y: e.touches[0].pageY,
+                      x: e.pageX,
+                      y: e.pageY,
                       file: obj,
                     });
-                  }, 600); // 600ms long press
-                  e.currentTarget.ontouchend = () => clearTimeout(timeout);
-                }}
-              >
-                <div className="w-1/2 lg:w-1/1 truncate">
-                  <p className="truncate mr-0 sm:mr-5 text-md sm:text-md">
-                    {obj.name}
-                  </p>
+                  }}
+                  onTouchStart={(e) => {
+                    const timeout = setTimeout(() => {
+                      setContextMenu({
+                        visible: true,
+                        x: e.touches[0].pageX,
+                        y: e.touches[0].pageY,
+                        file: obj,
+                      });
+                    }, 600); // 600ms long press
+                    e.currentTarget.ontouchend = () => clearTimeout(timeout);
+                  }}
+                >
+                  <div className="w-1/2 lg:w-1/1 truncate">
+                    <p className="truncate mr-0 sm:mr-5 text-md sm:text-md">
+                      {obj.name}
+                    </p>
+                  </div>
+                  <div className="w-1/4">
+                    <p
+                      className={`text-sm sm:text-md ${
+                        darkMode ? "text-[#64748B]" : "text-[#71717A]"
+                      }`}
+                    >
+                      {formatBytes(obj.size)}
+                    </p>
+                  </div>
+                  <div className="w-1/4">
+                    <p
+                      className={`text-sm sm:text-md ${
+                        darkMode ? "text-[#64748B]" : "text-[#71717A]"
+                      }`}
+                    >
+                      Modified: {formatDate(obj.uploadedAt)}
+                    </p>
+                  </div>
                 </div>
-                <div className="w-1/4">
-                  <p
-                    className={`text-sm sm:text-md ${
-                      darkMode ? "text-[#64748B]" : "text-[#71717A]"
-                    }`}
-                  >
-                    {formatBytes(obj.size)}
-                  </p>
-                </div>
-                <div className="w-1/4">
-                  <p
-                    className={`text-sm sm:text-md ${
-                      darkMode ? "text-[#64748B]" : "text-[#71717A]"
-                    }`}
-                  >
-                    Modified: {formatDate(obj.uploadedAt)}
-                  </p>
-                </div>
-              </div>
+              </a>
             ))}
           </div>
         ) : (

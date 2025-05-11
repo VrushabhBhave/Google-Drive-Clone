@@ -31,7 +31,7 @@ function App() {
         logOutDropDown={logOutDropDown}
         setLogOutDropDown = {setLogOutDropDown}
       />
-      <div className="app flex flex-col sm:flex-row min-h-screen">
+      <div className="app flex flex-col sm:flex-row min-h-full">
         <Sidebar darkMode={darkMode} />
         <Data darkMode={darkMode} />
       </div>
