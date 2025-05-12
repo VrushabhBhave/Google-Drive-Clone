@@ -10,6 +10,9 @@ function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [modeDropDown, setModeDropDown] = useState(false);
   const [logOutDropDown, setLogOutDropDown] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [files, setFiles] = useState([]);
+  const [storageExceeded, setStorageExceeded] = useState(false);
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("bg-[#071a2b]");
@@ -20,6 +23,7 @@ function App() {
     }
     setModeDropDown(false);
   }, [darkMode]);
+  console.log(storageExceeded);
 
   return user ? (
     <>
@@ -30,10 +34,13 @@ function App() {
         setModeDropDown={setModeDropDown}
         logOutDropDown={logOutDropDown}
         setLogOutDropDown = {setLogOutDropDown}
+        searchTerm = {searchTerm}
+        setSearchTerm = {setSearchTerm}
       />
       <div className="app flex flex-col sm:flex-row min-h-screen gap-20 sm:gap-0">
-        <Sidebar darkMode={darkMode} />
-        <Data darkMode={darkMode} />
+        <Sidebar darkMode={darkMode} files={files} setStorageExceeded={setStorageExceeded} storageExceeded={storageExceeded}/>
+        <Data darkMode={darkMode} searchTerm={searchTerm} files = {files}
+        setFiles = {setFiles} storageExceeded={storageExceeded}/>
       </div>
     </>
   ) : (

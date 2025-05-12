@@ -8,17 +8,18 @@ import { IoStarOutline } from "react-icons/io5";
 import { CiCloud } from "react-icons/ci";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { RiSpam2Line } from "react-icons/ri";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal } from "@mui/material";
 import { addDoc, collection, getFirestore } from "firebase/firestore";
 import { useAuth } from "../Context/AuthContext";
 import { supabase } from "../supabase";
 import { Bounce, toast } from "react-toastify";
-function Sidebar({ darkMode }) {
+function Sidebar({ darkMode, files, storageExceeded, setStorageExceeded }) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState(null);
+
   const db = getFirestore();
 
   function handleClose() {
@@ -38,6 +39,17 @@ function Sidebar({ darkMode }) {
   async function handleSubmit(e) {
     e.preventDefault();
     setUploading(true);
+
+    if (storageExceeded) {
+      toast.error("Storage limit exceeded. Cannot upload more files.", {
+        position: "top-center",
+        autoClose: 3000,
+        theme: "light",
+        transition: Bounce,
+      });
+      setUploading(false);
+      return;
+    }
     if (!user) {
       alert("Please log in.");
       return;
@@ -100,11 +112,44 @@ function Sidebar({ darkMode }) {
     setOpen(false);
   }
 
+  const [usedTotalSize, setUsedTotalSize] = useState(0);
+  const [usedStorageInBytes, setUsedStorageInBytes] = useState(0);
+  useEffect(() => {
+    const usedStorage = files.reduce((total, file) => total + file.size, 0);
+    setUsedStorageInBytes(usedStorage);
+
+    if (usedStorage === 0) {
+      setUsedTotalSize("0 Bytes");
+      return;
+    }
+
+    const formatBytes = (bytes, decimals = 2) => {
+      if (bytes === 0) return "0 Bytes";
+      const k = 1024;
+      const dm = decimals < 0 ? 0 : decimals;
+      const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+    };
+
+    setUsedTotalSize(formatBytes(usedStorage));
+
+    const totalStorage = 1024 * 1024 * 1024;
+    if (usedStorage > totalStorage) {
+      setStorageExceeded(true);
+    } else {
+      setStorageExceeded(false);
+    }
+  }, [files]);
+
+  const totalStorage = 1024 * 1024 * 1024;
+  const usagePercent = (usedStorageInBytes / totalStorage) * 100;
+  console.log(usagePercent);
   return (
     <>
       <Modal open={open} onClose={handleClose}>
         <div
-          className={`modal_pop top-[50%] relative w-[500px] m-[auto] transform translate-y-[-50%] ${
+          className={`modal_pop top-[50%] relative w-[90vw] sm:w-[500px] m-[auto] transform translate-y-[-50%] ${
             darkMode ? "bg-[#030712] border-1 border-gray-800" : "bg-white"
           } p-[24px] rounded-[10px] border-0`}
         >
@@ -254,6 +299,18 @@ function Sidebar({ darkMode }) {
             >
               <CiCloud className="text-2xl" />
               <span>Storage</span>
+            </div>
+
+            <div className="storage__indicator my-4">
+              <div className={`progress__bar w-[80%] h-[9px] rounded-full relative ${darkMode ? "bg-[#384754]" : "bg-[#c9cdd2]"} overflow-hidden`}>
+                <div
+                  className={`progress__rollar absolute ${darkMode ? "bg-[#bfdbfe]" : "bg-[#3b82f6]"} h-[9px] rounded-full`}
+                  style={{ width: `${usagePercent}%` }}
+                ></div>
+              </div>
+              <div className="size__content my-1 text-sm font-medium">
+                <p className={`${darkMode ? "text-[#95a5bd]" : "text-gray-700"}`}>{`${usedTotalSize} of 100MB`}</p>
+              </div>
             </div>
           </div>
         </div>

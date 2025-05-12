@@ -16,6 +16,8 @@ function Header({
   setModeDropDown,
   logOutDropDown,
   setLogOutDropDown,
+  searchTerm,
+  setSearchTerm
 }) {
   const { user } = useAuth();
 
@@ -93,6 +95,8 @@ function Header({
             name=""
             id=""
             placeholder="Search in Disk"
+            onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchTerm}
           />
           <button
             type="button"

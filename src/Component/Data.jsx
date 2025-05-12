@@ -6,9 +6,10 @@ import { deleteDoc, doc, onSnapshot } from "firebase/firestore";
 import { collection, getFirestore, query, where } from "firebase/firestore";
 import { supabase } from "../supabase";
 import { Bounce, toast } from "react-toastify";
-function Data({ darkMode }) {
-  const [files, setFiles] = useState([]);
-  const [gridActive, setGridActive] = useState(false);
+import SkeletonLoader from "./SkeletonLoader";
+function Data({ darkMode, searchTerm, files, setFiles }) {
+  const [gridActive, setGridActive] = useState(true);
+  const [loader, setLoader] = useState(true);
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
@@ -19,7 +20,8 @@ function Data({ darkMode }) {
   const db = getFirestore();
 
   useEffect(() => {
-    if (!user) return;
+    setTimeout(() => {
+      if (!user) return;
 
     const q = query(collection(db, "files"), where("userId", "==", user.uid));
 
@@ -29,10 +31,16 @@ function Data({ darkMode }) {
         ...doc.data(),
       }));
       setFiles(fileList);
+      setLoader(false);
     });
 
     return () => unsubscribe(); // Cleanup the listener on unmount
+    }, 1000);
   }, [user]);
+
+  const filteredFiles = files.filter((file) =>
+    file.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   useEffect(() => {
     const hideContext = () =>
@@ -42,8 +50,7 @@ function Data({ darkMode }) {
   }, [contextMenu]);
 
   function trimContent(name) {
-    const arr = name.split(".");
-    return arr[1];
+    return name.split('.').pop();
   }
 
   function formatBytes(bytes, decimals = 2) {
@@ -95,11 +102,25 @@ function Data({ darkMode }) {
       console.error("Delete failed:", err);
     }
   }
-  return files.length == 0 ? (
-    <div className={`no_files flex flex-col flex-wrap items-center justify-center w-full ${darkMode ? "text-[#3f3f46]" : "text-[#3f3f46]"}`}>
-        <img src="no-files.svg" alt="" className="w-[50%] md:w-[30%] lg:w-[23%]"/>
-        <p className="text-md sm:text-2xl py-2">Welcome to Drive, the home for all your files</p>
-        <p className="text-sm sm:text-xl">Use the “New” button to upload</p>
+
+  if (loader) {
+    return <SkeletonLoader view={gridActive ? "grid" : "list"} darkMode={darkMode} />;
+  }
+  return filteredFiles.length == 0 ? (
+    <div
+      className={`no_files flex flex-col flex-wrap items-center justify-center w-full ${
+        darkMode ? "text-[#3f3f46]" : "text-[#3f3f46]"
+      }`}
+    >
+      <img
+        src="no-files.svg"
+        alt=""
+        className="w-[50%] md:w-[30%] lg:w-[23%]"
+      />
+      <p className="text-md sm:text-2xl py-2">
+        Welcome to Drive, the home for all your files
+      </p>
+      <p className="text-sm sm:text-xl">Use the “New” button to upload</p>
     </div>
   ) : (
     <>
@@ -153,66 +174,66 @@ function Data({ darkMode }) {
               </div>
             </div>
 
-            {files.map((obj) => (
-              <a href={obj.url} target="_blank">  
-              <div
-                className={`file__card flex flex-col sm:flex-row text-center sm:text-left items-center sm:px-4 py-4 transition-all duration-300 cursor-pointer font-medium ${
-                  darkMode
-                    ? "bg-[#1e293b] hover:bg-blue-950 text-slate-400"
-                    : "bg-[#f0f4f9] hover:bg-blue-100 text-zinc-700"
-                } my-5 rounded-xl`}
-                key={obj.id}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  setContextMenu({
-                    visible: true,
-                    x: e.pageX,
-                    y: e.pageY,
-                    file: obj,
-                  });
-                }}
-                onTouchStart={(e) => {
-                  const timeout = setTimeout(() => {
+            {filteredFiles.map((obj) => (
+              <a href={obj.url} target="_blank" key={obj.id}>
+                <div
+                  className={`file__card flex flex-col sm:flex-row text-center sm:text-left items-center sm:px-4 py-4 transition-all duration-300 cursor-pointer font-medium ${
+                    darkMode
+                      ? "bg-[#1e293b] hover:bg-blue-950 text-slate-400"
+                      : "bg-[#f0f4f9] hover:bg-blue-100 text-zinc-700"
+                  } my-5 rounded-xl`}
+                  key={obj.id}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
                     setContextMenu({
                       visible: true,
-                      x: e.touches[0].pageX,
-                      y: e.touches[0].pageY,
+                      x: e.pageX,
+                      y: e.pageY,
                       file: obj,
                     });
-                  }, 600); // 600ms long press
-                  e.currentTarget.ontouchend = () => clearTimeout(timeout);
-                }}
-              >
-                <div className="w-1/2 lg:w-1/1 truncate">
-                  <p className="truncate mr-0 sm:mr-5 text-md sm:text-md">
-                    {obj.name}
-                  </p>
+                  }}
+                  onTouchStart={(e) => {
+                    const timeout = setTimeout(() => {
+                      setContextMenu({
+                        visible: true,
+                        x: e.touches[0].pageX,
+                        y: e.touches[0].pageY,
+                        file: obj,
+                      });
+                    }, 600); // 600ms long press
+                    e.currentTarget.ontouchend = () => clearTimeout(timeout);
+                  }}
+                >
+                  <div className="w-1/2 lg:w-1/1 truncate">
+                    <p className="truncate mr-0 sm:mr-5 text-md sm:text-md">
+                      {obj.name}
+                    </p>
+                  </div>
+                  <div className="w-1/4">
+                    <p
+                      className={`text-sm sm:text-md ${
+                        darkMode ? "text-[#64748B]" : "text-[#71717A]"
+                      }`}
+                    >
+                      {formatBytes(obj.size)}
+                    </p>
+                  </div>
+                  <div className="w-1/4">
+                    <p
+                      className={`text-sm sm:text-md ${
+                        darkMode ? "text-[#64748B]" : "text-[#71717A]"
+                      }`}
+                    >
+                      Modified: {formatDate(obj.uploadedAt)}
+                    </p>
+                  </div>
                 </div>
-                <div className="w-1/4">
-                  <p
-                    className={`text-sm sm:text-md ${
-                      darkMode ? "text-[#64748B]" : "text-[#71717A]"
-                    }`}
-                  >
-                    {formatBytes(obj.size)}
-                  </p>
-                </div>
-                <div className="w-1/4">
-                  <p
-                    className={`text-sm sm:text-md ${
-                      darkMode ? "text-[#64748B]" : "text-[#71717A]"
-                    }`}
-                  >
-                    Modified: {formatDate(obj.uploadedAt)}
-                  </p>
-                </div>
-              </div>
-            </a>
+              </a>
             ))}
           </div>
         ) : (
           <div className="file__Data grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-5">
-            {files.map((obj) => (
+            {filteredFiles.map((obj) => (
               <div
                 className={`file__card shadow py-2 px-3 rounded-lg transition-all duration-300 ${
                   darkMode
