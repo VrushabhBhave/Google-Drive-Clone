@@ -17,12 +17,17 @@ function Header({
   logOutDropDown,
   setLogOutDropDown,
   searchTerm,
-  setSearchTerm
+  setSearchTerm,
+  sortingDropDown,
+  setSortingDropDown,
+  files,
+  setFiles,
 }) {
   const { user } = useAuth();
 
   const logOutRef = useRef(null);
   const dropdownRef = useRef(null);
+  const sortingDropdownRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -30,12 +35,13 @@ function Header({
         setModeDropDown(false);
       }
 
-      if (
-      logOutRef.current &&
-      !logOutRef.current.contains(event.target)
-    ) {
-      setLogOutDropDown(false);
-    }
+      if (logOutRef.current && !logOutRef.current.contains(event.target)) {
+        setLogOutDropDown(false);
+      }
+
+      if (sortingDropdownRef.current && !sortingDropdownRef.current.contains(event.target)) {
+          setSortingDropDown(false);
+      }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -46,12 +52,20 @@ function Header({
 
   function handleModeDropDown() {
     setLogOutDropDown(false);
+    setSortingDropDown(false);
     setModeDropDown((prev) => !prev);
   }
 
   function handleLogOutDropDown() {
     setModeDropDown(false);
+    setSortingDropDown(false);
     setLogOutDropDown((prev) => !prev);
+  }
+
+  function handleSortDropDown() {
+    setModeDropDown(false);
+    setLogOutDropDown(false);
+    setSortingDropDown((prev) => !prev);
   }
 
   function handleLogOut() {
@@ -70,6 +84,18 @@ function Header({
     setLogOutDropDown(!logOutDropDown);
   }
 
+  function sortData(order) {
+    if (order === "nameAsc") {
+      setFiles([...files].sort((a, b) => a.name.localeCompare(b.name)));
+    } else if (order === "nameDesc") {
+      setFiles([...files].sort((a, b) => b.name.localeCompare(a.name)));
+    } else if (order === "dateAsc") {
+      setFiles([...files].sort((a, b) => a.uploadedAt.localeCompare(b.uploadedAt)));
+    } else if (order === "dateDesc") {
+      setFiles([...files].sort((a, b) => b.uploadedAt.localeCompare(a.uploadedAt)));
+    }
+  }
+
   return (
     <div className="header flex items-center justify-between p-5">
       <div className="header__left flex items-center justify-between">
@@ -82,7 +108,7 @@ function Header({
           <span className="text-2xl font-medium">GDrive</span>
         </div>
         <div
-          className={`header_serach hidden md:flex items-center w-[50vw] py-2 px-4 rounded-full ${
+          className={`header_search hidden md:flex items-center w-[50vw] py-2 px-4 rounded-full ${
             darkMode
               ? "bg-[#0d2136] text-[#95a5bd]"
               : "bg-[#e9eef6] text-[#52525b]"
@@ -102,9 +128,64 @@ function Header({
             type="button"
             className={`cursor-pointer ${
               darkMode ? "hover:bg-[#031525]" : "hover:bg-gray-200"
-            } p-2 rounded-full`}
+            } p-2 rounded-full relative`}
+            onClick={() => handleSortDropDown()}
           >
             <LuSlidersHorizontal className="text-xl" />
+            <div
+              className={`absolute text-start top-10 right-[-70px] shadow-[0px_0px_2px_gray] w-50 rounded p-2 ${
+                darkMode ? "bg-[black]" : "bg-[white]"
+              } ${sortingDropDown ? "block" : "hidden"}`}
+              ref={sortingDropdownRef}
+            >
+              <p
+                className={`font-bold text-black text-sm py-2 ${
+                  darkMode ? "text-white" : "text-black"
+                }`}
+              >
+                Sort By
+              </p>
+              <p
+                className={`text-sm py-2 px-1 rounded ${
+                  darkMode
+                    ? "hover:bg-[#1f2937] text-[white]"
+                    : "hover:bg-[#f3f4f6] text-black"
+                }`}
+                onClick={() => sortData("nameAsc")}
+              >
+                Name Ascending
+              </p>
+              <p
+                className={`text-sm py-2 px-1 rounded ${
+                  darkMode
+                    ? "hover:bg-[#1f2937] text-[white]"
+                    : "hover:bg-[#f3f4f6] text-black"
+                }`}
+                onClick={() => sortData("nameDesc")}
+              >
+                Name Decending
+              </p>
+              <p
+                className={`text-sm py-2 px-1 rounded ${
+                  darkMode
+                    ? "hover:bg-[#1f2937] text-[white]"
+                    : "hover:bg-[#f3f4f6] text-black"
+                }`}
+                onClick={() => sortData("dateAsc")}
+              >
+                Date Modified Ascending
+              </p>
+              <p
+                className={`text-sm py-2 px-1 rounded ${
+                  darkMode
+                    ? "hover:bg-[#1f2937] text-[white]"
+                    : "hover:bg-[#f3f4f6] text-black"
+                }`}
+                onClick={() => sortData("dateDesc")}
+              >
+                Date Modified Decending
+              </p>
+            </div>
           </button>
         </div>
       </div>
@@ -136,7 +217,8 @@ function Header({
               darkMode
                 ? "bg-black text-white border-2 border-[#071a2b]"
                 : "bg-white text-black"
-            } ${modeDropDown ? "block" : "hidden"}`} ref={dropdownRef}
+            } ${modeDropDown ? "block" : "hidden"}`}
+            ref={dropdownRef}
           >
             <div className="py-1 font-bold select-none">Theme</div>
             <p
@@ -177,7 +259,8 @@ function Header({
               darkMode
                 ? "bg-black text-white border-2 border-[#071a2b]"
                 : "bg-white text-black"
-            } ${logOutDropDown ? "block" : "hidden"}`} ref={logOutRef}
+            } ${logOutDropDown ? "block" : "hidden"}`}
+            ref={logOutRef}
           >
             <div className="py-1 font-bold select-none px-1 border-b">
               My Account

@@ -134,7 +134,7 @@ function Sidebar({ darkMode, files, storageExceeded, setStorageExceeded }) {
 
     setUsedTotalSize(formatBytes(usedStorage));
 
-    const totalStorage = 1024 * 1024 * 1024;
+    const totalStorage = 100 * 1024 * 1024;
     if (usedStorage > totalStorage) {
       setStorageExceeded(true);
     } else {
@@ -142,9 +142,8 @@ function Sidebar({ darkMode, files, storageExceeded, setStorageExceeded }) {
     }
   }, [files]);
 
-  const totalStorage = 1024 * 1024 * 1024;
+  const totalStorage = 100 * 1024 * 1024;
   const usagePercent = (usedStorageInBytes / totalStorage) * 100;
-  console.log(usagePercent);
   return (
     <>
       <Modal open={open} onClose={handleClose}>

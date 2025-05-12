@@ -67,7 +67,6 @@ function Data({ darkMode, searchTerm, files, setFiles }) {
     const formatteddate = date.split("T");
     return formatteddate[0];
   }
-  console.log(files);
 
   async function handleToDelete(id, path) {
     try {
@@ -87,7 +86,7 @@ function Data({ darkMode, searchTerm, files, setFiles }) {
         pauseOnHover: true,
         draggable: true,
         progress: undefined,
-        theme: "light",
+        theme: darkMode ? "dark" : "light",
         transition: Bounce,
       });
 
@@ -109,7 +108,7 @@ function Data({ darkMode, searchTerm, files, setFiles }) {
   return filteredFiles.length == 0 ? (
     <div
       className={`no_files flex flex-col flex-wrap items-center justify-center w-full ${
-        darkMode ? "text-[#3f3f46]" : "text-[#3f3f46]"
+        darkMode ? "text-[#95a5bd]" : "text-[#3f3f46]"
       }`}
     >
       <img
